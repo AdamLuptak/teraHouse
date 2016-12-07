@@ -16,23 +16,22 @@ String Router::route(String httpRequest, TerraController &terraController, UIPCl
         String requestEndpoint = this->httpParser.parseEndpoint(httpRequest);
 
         if (*routeList.get(i) == requestEndpoint) {
-            Serial.println("sa rovna");
 
             if (requestEndpoint.startsWith("actuator")) {
-
                 if (requestEndpoint.length() > 9) {
                     response = terraController.updateActuator(requestEndpoint, httpRequest);
                 } else {
                     response = terraController.actuatorListToJson(requestEndpoint, httpRequest);
                 }
                 break;
-
-            } else if (requestEndpoint.indexOf("sensor") > 0) {
-                if (requestEndpoint.length() > 9) {
+            } else if (requestEndpoint.startsWith("sensor")) {
+                if (requestEndpoint.length() > 7) {
                     response = terraController.sensorToJson(requestEndpoint, httpRequest);
                 } else {
                     response = terraController.sensorListToJson(requestEndpoint, httpRequest);
                 }
+                break;
+
             } else if (requestEndpoint.indexOf("time") > 0) {
                 this->updateTime();
                 response = this->timeToJson();
@@ -50,7 +49,6 @@ String Router::route(String httpRequest, TerraController &terraController, UIPCl
     }
     return response;
 }
-
 
 void Router::registerRoute(String *route) {
     routeList.add(route);

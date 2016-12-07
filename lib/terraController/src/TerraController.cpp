@@ -157,7 +157,13 @@ String TerraController::manualToJson(String requestEndpoint, String httpRequest)
 }
 
 String TerraController::sensorToJson(String requestEndpoint, String httpRequest) {
-    return String();
+    for (int j = 0; j < sensorList.size(); ++j) {
+        Sensor *pSensor = sensorList.get(j);
+        if (requestEndpoint == pSensor->getEndpoint()) {
+            String body = httpParser.parseBodyMessage(httpRequest);
+            return pSensor->toJson();
+        }
+    }
 }
 
 String TerraController::actuatorListToJson(String &endpoint, String &httpRequest) {
@@ -175,7 +181,15 @@ String TerraController::actuatorListToJson(String &endpoint, String &httpRequest
 }
 
 String TerraController::sensorListToJson(String &endpoint, String &httpRequest) {
-
-    return String();
-
+    String sensorListJson = "";
+    sensorListJson.concat("{[");
+    int listSize = sensorList.size();
+    for (int j = 0; j < listSize; ++j) {
+        Sensor *pSensor = sensorList.get(j);
+        sensorListJson.concat(pSensor->toJson());
+        if (j < listSize - 1)
+            sensorListJson.concat(",");
+    }
+    sensorListJson.concat("]}");
+    return sensorListJson;
 }
