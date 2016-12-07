@@ -6,8 +6,7 @@
 #define CLION_RTC_H
 
 
-class rtc {
-
+class RTC {
 };
 
 

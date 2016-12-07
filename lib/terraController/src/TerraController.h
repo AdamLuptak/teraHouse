@@ -33,11 +33,20 @@ public:
 
     String actuatorToJson(int index);
 
+    String actuatorListToJson(String &endpoint, String &httpRequest);
+
+    String sensorListToJson(String &endpoint, String &httpRequest);
+
+    String sensorToJson(String requestEndpoint, String httpRequest);
+
+    String manualToJson(String requestEndpoint, String httpRequest);
+
     boolean getManual();
 
     void setManual(boolean manual);
 
-    void updateActuator(String &endpoint, String &httpRequest);
+    String updateActuator(String &endpoint, String &httpRequest);
+
 private:
     LinkedList<Sensor *> sensorList = LinkedList<Sensor *>();
     LinkedList<Actuator *> actuatorList = LinkedList<Actuator *>();
@@ -45,6 +54,5 @@ private:
     boolean manual = false;
     HttpParser httpParser;
 };
-
 
 #endif //CLION_TERRACONTROLLER_H

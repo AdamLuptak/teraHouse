@@ -6,6 +6,8 @@
 #define CLION_HTTPPARSER_H
 
 #include <WString.h>
+#include <USBAPI.h>
+
 typedef enum REST{ // <-- the use of typedef is optional.
     POST,
     GET
@@ -19,6 +21,8 @@ public:
     void cleanRequest(String &httpRequest);
 
     String parseBodyMessage(String &httpReuest);
+
+    boolean parseParameter(String httpRequest);
 };
 
 

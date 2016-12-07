@@ -113,7 +113,7 @@ void TerraController::setManual(boolean manual) {
     TerraController::manual = manual;
 }
 
-void TerraController::updateActuator(String &endpoint, String &httpRequest) {
+String TerraController::updateActuator(String &endpoint, String &httpRequest) {
     for (int j = 0; j < actuatorList.size(); ++j) {
         Actuator *pActuator = actuatorList.get(j);
         if (endpoint == pActuator->getEndpoint()) {
@@ -146,6 +146,36 @@ void TerraController::updateActuator(String &endpoint, String &httpRequest) {
                 pActuator->setActionTime(k, interval["actionTime"]);
                 pActuator->setDuration(k, interval["duration"]);
             }
+
+            return pActuator->toJson();
         }
     }
+}
+
+String TerraController::manualToJson(String requestEndpoint, String httpRequest) {
+    return String();
+}
+
+String TerraController::sensorToJson(String requestEndpoint, String httpRequest) {
+    return String();
+}
+
+String TerraController::actuatorListToJson(String &endpoint, String &httpRequest) {
+    String actuatorLisJson = "";
+    actuatorLisJson.concat("{[");
+    int listSize = actuatorList.size();
+    for (int j = 0; j < listSize; ++j) {
+        Actuator *pActuator = actuatorList.get(j);
+        actuatorLisJson.concat(pActuator->toJson());
+        if (j < listSize - 1)
+            actuatorLisJson.concat(",");
+    }
+    actuatorLisJson.concat("]}");
+    return actuatorLisJson;
+}
+
+String TerraController::sensorListToJson(String &endpoint, String &httpRequest) {
+
+    return String();
+
 }

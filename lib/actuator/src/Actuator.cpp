@@ -126,8 +126,8 @@ String Actuator::toString() {
 
 String Actuator::toJson() {
     char buff[200];
-    sprintf(buff, "{\"pin\": %d, \"startTime\":%d, \"state\":%d,"
-            "\"intervals\":",this->pin,this->startTime,this->pinState);
+    sprintf(buff, "{\"pin\": %d, \"startTime\":%d, \"state\":%d, \"endpoint\": \"%s\","
+            "\"intervals\":",this->pin,this->startTime,this->pinState,this->endpoint.c_str());
 
     String string(buff);
     string.concat("[");

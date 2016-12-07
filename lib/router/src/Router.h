@@ -10,10 +10,14 @@
 #include "HttpParser.h"
 #include "Arduino.h"
 #include "ArduinoJson.h"
+#include "TimeLib.h"
+#include "Time.h"
+#include <UIPClient.h>
+#include "Response.h"
 
 class Router {
 public:
-    void route(String httpRequest, TerraController &terraController);
+    String route(String httpRequest, TerraController &terraController, UIPClient &client);
 
     void registerRoute(String *route);
 
@@ -24,6 +28,10 @@ public:
 private:
     LinkedList<String *> routeList = LinkedList<String *>();
     HttpParser httpParser;
+
+    String timeToJson();
+
+    void updateTime();
 };
 
 

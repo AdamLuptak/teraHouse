@@ -1,7 +1,6 @@
 #include "Arduino.h"]
 #include <TerraController.h>
 #include <Adafruit_Sensor.h>
-#include <Time.h>
 #include <TimeLib.h>
 #include <DhtSensor.h>
 #include <LinkedList.h>
@@ -132,8 +131,6 @@ void setup() {
     setupEthernet();
 
     pinMode(8, OUTPUT);
-
-
 
 
     dhtSensor1.begin();
@@ -302,27 +299,20 @@ void loop() {
                 if (bodyHeader.indexOf("\n{") > 0) {
                 } else {
                     finalString++;
-
                 }
-
                 if (bodyHeader.indexOf("HTTP") > 0) {
                     break;
                 }
-
-
             }
         }
 
-        router.route(bodyHeader,tc);
+        String response = router.route(bodyHeader, tc, client);
 
         if (timeout) {
-            client.print(HEADER_JSON);
-            client.println("{\"error\" : \"timeout\"}");
-        } else {
-            sendResponse(client, HEADER_JSON);
-
+            response = "{\"error\" : \"timeout\"}";
         }
-
+        client.print(HEADER_JSON);
+        client.println(response);
 
         /*  String getRequest = headerRequest.substring(body.indexOf("GET /") + 5, body.indexOf("HTTP"));
 
@@ -378,6 +368,7 @@ actuatorAction(char *data, Actuator &actuator, const char *ON_FLAG, const char *
 }
 
 void setTimeJson(JsonObject &jsonTime) {
+
     jsonTime["hours"] = hour();
     jsonTime["minutes"] = minute();
     jsonTime["seconds"] = second();
