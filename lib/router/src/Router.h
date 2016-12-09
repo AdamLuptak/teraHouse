@@ -5,6 +5,16 @@
 #ifndef CLION_ROUTER_H
 #define CLION_ROUTER_H
 
+static const char *const ACTUATOR_END = "actuator";
+
+static const char *const SENSOR_END = "sensor";
+
+static const char *const TIME_END = "time";
+
+static const char *const MANUAL_END = "manualControl";
+
+static const char *const ALL_END = "all/";
+
 #include <WString.h>
 #include <LinkedList.h>
 #include "HttpParser.h"
@@ -13,7 +23,6 @@
 #include "TimeLib.h"
 #include "Time.h"
 #include <UIPClient.h>
-#include "Response.h"
 
 class Router {
 public:
@@ -31,7 +40,7 @@ private:
 
     String timeToJson();
 
-    void updateTime();
+    void updateTime(String httpRequest);
 };
 
 

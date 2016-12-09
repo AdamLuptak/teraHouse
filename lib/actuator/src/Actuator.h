@@ -19,13 +19,13 @@ class Actuator {
 public:
     Actuator();
 
-    Actuator(int pin);
+    Actuator(uint8_t pin);
 
-    Actuator(int pin, int startTime, float actionTimes[], float durations[], String &endpoint);
+    Actuator(uint8_t pin, int startTime, float actionTimes[], float durations[], String &endpoint);
 
-    void update(int Hour, int minutes, int seconds);
+    void update(int Hour, int minutes);
 
-    void setPin(int pin);
+    void setPin(uint8_t pin);
 
     void setStartTime(int startTime);
 
@@ -66,7 +66,7 @@ private:
     int numActionTimes = 5;
     float *durations;
     float *actionTimes;
-    int pin;
+    uint8_t pin;
     int startTime;
     boolean pinState = false;
 };

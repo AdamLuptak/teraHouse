@@ -7,7 +7,7 @@
 #include "TerraController.h"
 
 Actuator *
-TerraController::changeActuator(int index, int pin, int startTime, float actionTimeArray[], float durationArray[]) {
+TerraController::changeActuator(int index, uint8_t pin, int startTime, float actionTimeArray[], float durationArray[]) {
 
     Actuator *pActuator = actuatorList.get(index);
 
@@ -63,12 +63,12 @@ String TerraController::actuatorToJson(int index) {
     return adapter.actuatorToJson(actuatorList.get(index));
 }
 
-void TerraController::update(int hour, int minute, int second) {
+void TerraController::update(int hour, int minute) {
 
-    int atuatorSize = actuatorList.size();
-    for (int i = 0; i < atuatorSize; ++i) {
+    int actuatorSize = actuatorList.size();
+    for (int i = 0; i < actuatorSize; ++i) {
         Actuator *pActuator = actuatorList.get(i);
-        pActuator->update(hour, minute, second);
+        pActuator->update(hour, minute);
     }
 
     int sensorListSize = sensorList.size();
@@ -123,7 +123,7 @@ String TerraController::updateActuator(String &endpoint, String &httpRequest) {
 
             JsonObject &root = json[endpoint].asObject();
 
-            int newPin = root["pin"];
+            uint8_t newPin = root["pin"];
             if (newPin != 0)
                 pActuator->setPin(newPin);
 
@@ -150,10 +150,15 @@ String TerraController::updateActuator(String &endpoint, String &httpRequest) {
             return pActuator->toJson();
         }
     }
+    return "{ \"error\" : \"cant find actuator with this name\"}";
 }
 
-String TerraController::manualToJson(String requestEndpoint, String httpRequest) {
-    return String();
+String TerraController::manualToJson() {
+    char buff[200];
+    sprintf(buff,
+            "{\"manual\" : \"%d\" }",
+            this->manual);
+    return String(buff);
 }
 
 String TerraController::sensorToJson(String requestEndpoint, String httpRequest) {
@@ -164,6 +169,7 @@ String TerraController::sensorToJson(String requestEndpoint, String httpRequest)
             return pSensor->toJson();
         }
     }
+    return "{ \"error\" : \"cant find sesor with this name\"}";
 }
 
 String TerraController::actuatorListToJson(String &endpoint, String &httpRequest) {

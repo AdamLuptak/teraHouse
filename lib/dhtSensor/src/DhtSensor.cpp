@@ -20,7 +20,7 @@ void DhtSensor::setSensor(const DHT &sensor) {
     DhtSensor::sensor = sensor;
 }
 
-DhtSensor::DhtSensor(int pin, uint8_t type, String &endpoint) {
+DhtSensor::DhtSensor(uint8_t pin, uint8_t type, String &endpoint) {
     this->endpoint = endpoint;
     this->sensor = DHT(pin, type);
 }

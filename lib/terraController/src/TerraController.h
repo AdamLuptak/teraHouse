@@ -15,9 +15,9 @@
 
 class TerraController {
 public:
-    void update(int hour, int minute, int second);
+    void update(int hour, int minute);
 
-    Actuator *changeActuator(int index, int pin, int startTime, float actionTimeArray[], float durationArray[]);
+    Actuator *changeActuator(int index, uint8_t pin, int startTime, float actionTimeArray[], float durationArray[]);
 
     LinkedList<Sensor *> &getSensorList();
 
@@ -39,7 +39,7 @@ public:
 
     String sensorToJson(String requestEndpoint, String httpRequest);
 
-    String manualToJson(String requestEndpoint, String httpRequest);
+    String manualToJson();
 
     boolean getManual();
 

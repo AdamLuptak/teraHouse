@@ -7,22 +7,18 @@
 
 #include <WString.h>
 #include <USBAPI.h>
-
-typedef enum REST{ // <-- the use of typedef is optional.
-    POST,
-    GET
-};
+#include "ArduinoJson.h"
 
 class HttpParser {
 public:
-    String  parseEndpoint(String httpReuest);
-    String parseBody(String httpReuest);
+    String  parseEndpoint(String httpRequest);
+    String parseBody(String httpRequest);
 
     void cleanRequest(String &httpRequest);
 
-    String parseBodyMessage(String &httpReuest);
+    String parseBodyMessage(String &httpRequest);
 
-    boolean parseParameter(String httpRequest);
+    boolean getManualParam(String httpRequest);
 };
 
 

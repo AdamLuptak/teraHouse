@@ -6,12 +6,12 @@
 
 Actuator::Actuator() {}
 
-Actuator::Actuator(int pin) {
+Actuator::Actuator(uint8_t pin) {
     pinMode(pin, OUTPUT);
     this->pin = pin;
 }
 
-Actuator::Actuator(int pin, int startTime, float *actionTimes, float *durations, String &endpoint) {
+Actuator::Actuator(uint8_t pin, int startTime, float *actionTimes, float *durations, String &endpoint) {
     this->actionTimes = actionTimes;
     this->durations = durations;
     this->endpoint = endpoint;
@@ -23,18 +23,13 @@ float Actuator::getActionTime(int numActionTime) {
     return actionTimes[numActionTime];
 }
 
-void Actuator::update(int hour, int minutes, int seconds) {
+void Actuator::update(int hour, int minutes) {
 
     float time = hour + ((float) minutes / 100);
     for (int index = 0; index < numActionTimes; ++index) {
 
         float actionTime = actionTimes[index];
         float duration = durations[index];
-        char buff[255];
-        //Serial.print(actionTime);
-        //Serial.print(time);
-        //Serial.println(duration);
-
 
         if (time >= actionTime && time < actionTime + duration) {
             pinState = true;
@@ -44,7 +39,7 @@ void Actuator::update(int hour, int minutes, int seconds) {
         }
     }
     if (!digitalRead(pin) == pinState) {
-        digitalWrite(pin, pinState);
+        digitalWrite(pin, (uint8_t) pinState);
     }
 }
 
@@ -80,7 +75,7 @@ int Actuator::getStartTime() {
     return this->startTime;
 }
 
-void Actuator::setPin(int pin) {
+void Actuator::setPin(uint8_t pin) {
     this->pin = pin;
 }
 
@@ -94,12 +89,12 @@ float Actuator::getDuration(int index) {
 
 boolean Actuator::turnOn() {
     digitalWrite(pin, HIGH);
-    return digitalRead(pin);
+    return (boolean) digitalRead(pin);
 }
 
 boolean Actuator::turnOff() {
     digitalWrite(pin, LOW);
-    return digitalRead(pin);
+    return (boolean) digitalRead(pin);
 
 }
 
