@@ -64,17 +64,18 @@ String TerraController::actuatorToJson(int index) {
 }
 
 void TerraController::update(int hour, int minute) {
+    if (!manual) {
+        int actuatorSize = actuatorList.size();
+        for (int i = 0; i < actuatorSize; ++i) {
+            Actuator *pActuator = actuatorList.get(i);
+            pActuator->update(hour, minute);
+        }
 
-    int actuatorSize = actuatorList.size();
-    for (int i = 0; i < actuatorSize; ++i) {
-        Actuator *pActuator = actuatorList.get(i);
-        pActuator->update(hour, minute);
-    }
-
-    int sensorListSize = sensorList.size();
-    for (int i = 0; i < sensorListSize; ++i) {
-        Sensor *pSensor = sensorList.get(i);
-        pSensor->getMeasurement();
+        int sensorListSize = sensorList.size();
+        for (int i = 0; i < sensorListSize; ++i) {
+            Sensor *pSensor = sensorList.get(i);
+            pSensor->getMeasurement();
+        }
     }
 }
 
@@ -115,33 +116,42 @@ void TerraController::setManual(boolean manual) {
 
 String TerraController::updateActuator(String &endpoint, String &httpRequest) {
     String errorMessage = "{\"error\" : \"";
-    if (manual) {
 
-    } else {
-        for (int j = 0; j < actuatorList.size(); ++j) {
-            Actuator *pActuator = actuatorList.get(j);
-            if (endpoint == pActuator->getEndpoint()) {
-                String body = httpParser.parseBodyMessage(httpRequest);
-                StaticJsonBuffer<1500> jsonBuffer;
-                const JsonObject &json = jsonBuffer.parse(body);
+    for (int j = 0; j < actuatorList.size(); ++j) {
+        Actuator *pActuator = actuatorList.get(j);
+        String body = httpParser.parseBodyMessage(httpRequest);
+        StaticJsonBuffer<1500> jsonBuffer;
+        const JsonObject &json = jsonBuffer.parse(body);
+        if (endpoint == pActuator->getEndpoint()) {
 
+            if (manual) {
+                boolean state = json["state"];
+                if (state) {
+                    pActuator->turnOn();
+                } else {
+                    pActuator->turnOff();
+                }
+                return pActuator->toJson();
+
+            } else {
                 JsonObject &root = json[endpoint].asObject();
 
                 uint8_t newPin = root["pin"];
-                Serial.println("pin");
-
-                Serial.println(newPin);
 
                 if (newPin != 0 && isPinAvialable(newPin) && newPin >= startPin && newPin <= endPin) {
                     pActuator->setPin(newPin);
                 } else {
-                    errorMessage.concat(" pin is in use or not in interval[8-12], ");
+                    errorMessage.concat(" pin ");
+                    errorMessage.concat(newPin);
+                    errorMessage.concat(" is in use or not in interval[8-12], ");
                 }
                 int newStartTime = root["startTime"];
                 if (newStartTime <= 24 && newStartTime > 0) {
                     pActuator->setStartTime(newStartTime);
                 } else {
-                    errorMessage.concat(" startTime error interval [1 - 24], ");
+                    errorMessage.concat(" startTime ");
+                    errorMessage.concat(newStartTime);
+                    errorMessage.concat(" out off interval [1 - 24], ");
                 }
 
                 boolean state = (boolean) root["state"];
@@ -159,12 +169,12 @@ String TerraController::updateActuator(String &endpoint, String &httpRequest) {
                     float actionTime = interval["actionTime"];
                     float duration = interval["duration"];
                     if (actionTime > 24) {
-                        errorMessage.concat(" action Time out of interval [0 - 24], ");
+                        errorMessage.concat(" on of action Time out of interval [0 - 24], ");
                     } else {
                         pActuator->setActionTime(k, actionTime);
                     }
                     if (duration > 24) {
-                        errorMessage.concat(" duration out of interval [0 - 24], ");
+                        errorMessage.concat(" one of duration out of interval [0 - 24], ");
                     } else {
                         pActuator->setDuration(k, duration);
                     }
@@ -178,6 +188,7 @@ String TerraController::updateActuator(String &endpoint, String &httpRequest) {
                 };
             }
         }
+
     }
     return "{ \"error\" : \"cant find actuator with this name\"}";
 }
