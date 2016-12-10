@@ -100,14 +100,15 @@ boolean Actuator::turnOff() {
 
 String Actuator::toString() {
     char buff[200];
-    sprintf(buff, "pin: %d, startTime:%d, state:%d\n"
-            "intervals:",this->pin,this->startTime,this->pinState);
+    sprintf(buff, "pin: %d, startTime:%d, state:%d, endpoint:%s\n"
+            "intervals:", this->pin, this->startTime, this->pinState, this->endpoint.c_str());
 
     String string(buff);
 
     for (int i = 0; i < 5; ++i) {
         string.concat("[");
         string.concat(this->actionTimes[i]);
+        string.concat(", ");
         string.concat(this->durations[i]);
 
         if (i == 4) {
@@ -122,7 +123,7 @@ String Actuator::toString() {
 String Actuator::toJson() {
     char buff[200];
     sprintf(buff, "{\"pin\": %d, \"startTime\":%d, \"state\":%d, \"endpoint\": \"%s\","
-            "\"intervals\":",this->pin,this->startTime,this->pinState,this->endpoint.c_str());
+            "\"intervals\":", this->pin, this->startTime, this->pinState, this->endpoint.c_str());
 
     String string(buff);
     string.concat("[");
@@ -143,10 +144,10 @@ String Actuator::toJson() {
     return string;
 }
 
- String &Actuator::getEndpoint()  {
+String &Actuator::getEndpoint() {
     return endpoint;
 }
 
-void Actuator::setEndpoint( String &endpoint) {
+void Actuator::setEndpoint(String &endpoint) {
     Actuator::endpoint = endpoint;
 }

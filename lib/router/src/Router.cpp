@@ -34,8 +34,10 @@ String Router::route(String httpRequest, TerraController &terraController, UIPCl
                 break;
 
             } else if (requestEndpoint.indexOf(TIME_END) > 0) {
-                this->updateTime(httpRequest);
-                response = this->timeToJson();
+                response = this->updateTime(httpRequest) ? this->timeToJson()
+                                                         : "{\"error\" : \"bad input tipe of time [hour <1,24>,"
+                                   " minute <1,60>, second <1,60>, "
+                                   "day <1,7>, month <1,12>, year <1,24>] \" }";
                 break;
             } else if (requestEndpoint.indexOf(MANUAL_END) > 0) {
                 terraController.setManual(httpParser.getManualParam(httpRequest));
@@ -75,7 +77,7 @@ String Router::timeToJson() {
     return String(buff);
 }
 
-void Router::updateTime(String httpRequest) {
+boolean Router::updateTime(String httpRequest) {
     Serial.println(httpRequest);
 
     String body = httpParser.parseBodyMessage(httpRequest);
@@ -93,5 +95,11 @@ void Router::updateTime(String httpRequest) {
     objectTime.prettyPrintTo(Serial);
     Serial.println(hour);
 
-    setTime(hour, minute, second, day, month, year);
+    if (hour && minute && second && day && month && year > 0 && hour <= 24 && minute <= 60 && second <= 60 &&
+        day <= 7 && month <= 12 & year <= 24) {
+        setTime(hour, minute, second, day, month, year);
+        return true;
+    } else {
+        return false;
+    }
 }

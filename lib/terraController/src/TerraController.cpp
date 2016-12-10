@@ -114,43 +114,81 @@ void TerraController::setManual(boolean manual) {
 }
 
 String TerraController::updateActuator(String &endpoint, String &httpRequest) {
-    for (int j = 0; j < actuatorList.size(); ++j) {
-        Actuator *pActuator = actuatorList.get(j);
-        if (endpoint == pActuator->getEndpoint()) {
-            String body = httpParser.parseBodyMessage(httpRequest);
-            StaticJsonBuffer<1500> jsonBuffer;
-            const JsonObject &json = jsonBuffer.parse(body);
+    String errorMessage = "{\"error\" : \"";
+    if (manual) {
 
-            JsonObject &root = json[endpoint].asObject();
+    } else {
+        for (int j = 0; j < actuatorList.size(); ++j) {
+            Actuator *pActuator = actuatorList.get(j);
+            if (endpoint == pActuator->getEndpoint()) {
+                String body = httpParser.parseBodyMessage(httpRequest);
+                StaticJsonBuffer<1500> jsonBuffer;
+                const JsonObject &json = jsonBuffer.parse(body);
 
-            uint8_t newPin = root["pin"];
-            if (newPin != 0)
-                pActuator->setPin(newPin);
+                JsonObject &root = json[endpoint].asObject();
 
-            int newStartTime = root["startTime"];
-            if (newStartTime != 0)
-                pActuator->setStartTime(newStartTime);
+                uint8_t newPin = root["pin"];
+                Serial.println("pin");
 
-            boolean state = (boolean) root["state"];
-            if (this->getManual()) {
-                if (state) {
-                    pActuator->turnOn();
+                Serial.println(newPin);
+
+                if (newPin != 0 && isPinAvialable(newPin) && newPin >= startPin && newPin <= endPin) {
+                    pActuator->setPin(newPin);
                 } else {
-                    pActuator->turnOff();
+                    errorMessage.concat(" pin is in use or not in interval[8-12], ");
                 }
-            }
+                int newStartTime = root["startTime"];
+                if (newStartTime <= 24 && newStartTime > 0) {
+                    pActuator->setStartTime(newStartTime);
+                } else {
+                    errorMessage.concat(" startTime error interval [1 - 24], ");
+                }
 
-            JsonArray &intervals = root["intervals"].asArray();
-            for (int k = 0; k < intervals.size(); ++k) {
-                JsonObject &interval = intervals[k].asObject();
-                pActuator->setActionTime(k, interval["actionTime"]);
-                pActuator->setDuration(k, interval["duration"]);
-            }
+                boolean state = (boolean) root["state"];
+                if (this->getManual()) {
+                    if (state) {
+                        pActuator->turnOn();
+                    } else {
+                        pActuator->turnOff();
+                    }
+                }
 
-            return pActuator->toJson();
+                JsonArray &intervals = root["intervals"].asArray();
+                for (int k = 0; k < intervals.size(); ++k) {
+                    JsonObject &interval = intervals[k].asObject();
+                    float actionTime = interval["actionTime"];
+                    float duration = interval["duration"];
+                    if (actionTime > 24) {
+                        errorMessage.concat(" action Time out of interval [0 - 24], ");
+                    } else {
+                        pActuator->setActionTime(k, actionTime);
+                    }
+                    if (duration > 24) {
+                        errorMessage.concat(" duration out of interval [0 - 24], ");
+                    } else {
+                        pActuator->setDuration(k, duration);
+                    }
+                }
+
+                if (errorMessage.length() <= 12) {
+                    return pActuator->toJson();
+                } else {
+                    errorMessage.concat("\"}");
+                    return errorMessage;
+                };
+            }
         }
     }
     return "{ \"error\" : \"cant find actuator with this name\"}";
+}
+
+boolean TerraController::isPinAvialable(uint8_t pin) {
+    for (int j = 0; j < actuatorList.size(); ++j) {
+        Actuator *pActuator = actuatorList.get(j);
+        if (pActuator->getPin() == pin)
+            return false;
+    }
+    return true;
 }
 
 String TerraController::manualToJson() {
@@ -188,7 +226,7 @@ String TerraController::actuatorListToJson(String &endpoint, String &httpRequest
 
 String TerraController::sensorListToJson(String &endpoint, String &httpRequest) {
     String sensorListJson = "";
-    sensorListJson.concat("{[");
+    sensorListJson.concat("[");
     int listSize = sensorList.size();
     for (int j = 0; j < listSize; ++j) {
         Sensor *pSensor = sensorList.get(j);
@@ -196,6 +234,6 @@ String TerraController::sensorListToJson(String &endpoint, String &httpRequest) 
         if (j < listSize - 1)
             sensorListJson.concat(",");
     }
-    sensorListJson.concat("]}");
+    sensorListJson.concat("]");
     return sensorListJson;
 }

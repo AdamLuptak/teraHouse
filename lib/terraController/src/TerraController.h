@@ -53,6 +53,9 @@ private:
     JsonAdapter adapter;
     boolean manual = false;
     HttpParser httpParser;
+    uint8_t startPin = 8;
+    uint8_t endPin = 12;
+    boolean isPinAvialable(uint8_t pin);
 };
 
 #endif //CLION_TERRACONTROLLER_H

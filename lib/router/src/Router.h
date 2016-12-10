@@ -40,7 +40,7 @@ private:
 
     String timeToJson();
 
-    void updateTime(String httpRequest);
+    boolean updateTime(String httpRequest);
 };
 
 
