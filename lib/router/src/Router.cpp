@@ -33,7 +33,7 @@ String Router::route(String httpRequest, TerraController &terraController, UIPCl
                 }
                 break;
 
-            } else if (requestEndpoint.indexOf(TIME_END) > 0) {
+            } else if (requestEndpoint.indexOf(TIME_END) > -1) {
                 response = this->updateTime(httpRequest) ? this->timeToJson()
                                                          : "{\"error\" : \"bad input tipe of time [hour <1,24>,"
                                    " minute <1,60>, second <1,60>, "
@@ -46,6 +46,9 @@ String Router::route(String httpRequest, TerraController &terraController, UIPCl
 
             } else if (requestEndpoint.startsWith(ALL_END)) {
                 response = terraController.toJson();
+                break;
+            } else if (requestEndpoint.indexOf(SHOW_TIME_END) > -1) {
+                response = this->timeToJson();
                 break;
             }
 

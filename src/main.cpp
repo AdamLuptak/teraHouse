@@ -5,6 +5,7 @@
 #include <Router.h>
 #include "UIPEthernet.h"
 #include "Timer.h"
+#include <avr/wdt.h>
 
 Router router;
 
@@ -37,7 +38,7 @@ String FOOG = "actuator/foog";
 String SENSORS = "sensor/";
 String ACTUATOR = "actuator/";
 String ALL = "all/";
-
+String SHOW_TIME = "get/time";
 
 float dayLightAT[5] = {
         14.10};
@@ -84,6 +85,9 @@ void setup() {
 
     //loadActuators();
 
+    Serial.println("restart device");
+
+
     setTime(14, 20, 56, 1, 1, 11);
 
     setPins();
@@ -120,11 +124,15 @@ void setup() {
     router.registerRoute(&SENSORS);
     router.registerRoute(&ALL);
     router.registerRoute(&ACTUATOR);
+    router.registerRoute(&SHOW_TIME);
 
     LinkedList<String *> &routeList = router.getRouteList();
     for (int i = 0; i < routeList.size(); ++i) {
         Serial.println(*routeList.get(i));
     }
+
+    wdt_enable(WDTO_8S);     // enable the watchdog
+
 }
 
 void setupEthernet() {
@@ -146,14 +154,14 @@ void serialSetup() {
 }
 
 //void loadActuators() {
-//    dayLight = EEPROM.get(eeDayLight, dayLight);
+//    dayLight = EEPROM.get(eeTerraControllerIndex, dayLight);
 //    evenLight = EEPROM.get(eeEvenLight, evenLight);
 //    foog = EEPROM.get(eeFoog, foog);
 //    misting = EEPROM.get(eeMisting, misting);
 //}
 //
 //void saveActuators() {
-//    EEPROM.put(eeDayLight, dayLight);
+//    EEPROM.put(eeTerraControllerIndex, dayLight);
 //    EEPROM.put(eeEvenLight, evenLight);
 //    EEPROM.put(eeFoog, foog);
 //    EEPROM.put(eeMisting, misting);
@@ -224,6 +232,9 @@ void loop() {
     }
 
     timer.update();
+
+    wdt_reset();
+
 }
 
 

@@ -9,10 +9,10 @@ static const char *const ACTUATOR_END = "actuator";
 
 static const char *const SENSOR_END = "sensor";
 
-static const char *const TIME_END = "time";
+static const char *const TIME_END = "setup/time";
 
 static const char *const MANUAL_END = "manualControl";
-
+static const char *const SHOW_TIME_END = "get/time";
 static const char *const ALL_END = "all/";
 
 #include <WString.h>

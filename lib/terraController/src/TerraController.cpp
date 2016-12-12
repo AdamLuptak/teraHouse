@@ -124,6 +124,10 @@ String TerraController::updateActuator(String &endpoint, String &httpRequest) {
         const JsonObject &json = jsonBuffer.parse(body);
         if (endpoint == pActuator->getEndpoint()) {
 
+            if (json.containsKey("state") && !manual) {
+                return "{ \"error\" : \"you are not in manual mod\"}";
+            }
+
             if (manual) {
                 boolean state = json["state"];
                 if (state) {
