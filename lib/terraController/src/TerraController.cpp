@@ -63,18 +63,20 @@ String TerraController::actuatorToJson(int index) {
     return adapter.actuatorToJson(actuatorList.get(index));
 }
 
-void TerraController::update(int hour, int minute) {
+void TerraController::update(int hour, int minute, int second) {
     if (!manual) {
         int actuatorSize = actuatorList.size();
         for (int i = 0; i < actuatorSize; ++i) {
             Actuator *pActuator = actuatorList.get(i);
-            pActuator->update(hour, minute);
+            pActuator->update(hour, minute, second);
         }
 
         int sensorListSize = sensorList.size();
         for (int i = 0; i < sensorListSize; ++i) {
             Sensor *pSensor = sensorList.get(i);
             pSensor->getMeasurement();
+            Serial.println(pSensor->toString());
+
         }
     }
 }
@@ -251,4 +253,16 @@ String TerraController::sensorListToJson(String &endpoint, String &httpRequest) 
     }
     sensorListJson.concat("]");
     return sensorListJson;
+}
+
+void TerraController::createTC(TerraController terraController) {
+    EEPROM.put(eeTerraControllerIndex, terraController);
+}
+
+void TerraController::updateTC(TerraController terraController) {
+    EEPROM.put(eeTerraControllerIndex, terraController);
+}
+
+TerraController TerraController::read(TerraController &terraController) {
+    return EEPROM.get(50,terraController);
 }

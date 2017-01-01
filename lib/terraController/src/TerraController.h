@@ -12,10 +12,11 @@
 #include <JsonAdapter.h>
 #include "ArduinoJson.h"
 #include "HttpParser.h"
+#include "EEPROM.h"
 
 class TerraController {
 public:
-    void update(int hour, int minute);
+    void update(int hour, int minute, int i);
 
     Actuator *changeActuator(int index, uint8_t pin, int startTime, float actionTimeArray[], float durationArray[]);
 
@@ -45,6 +46,8 @@ public:
 
     void setManual(boolean manual);
 
+    static TerraController read(TerraController &terraControl);
+
     String updateActuator(String &endpoint, String &httpRequest);
 
 private:
@@ -56,6 +59,12 @@ private:
     uint8_t startPin = 8;
     uint8_t endPin = 12;
     boolean isPinAvialable(uint8_t pin);
+    int eeTerraControllerIndex = 50;
+
+    void createTC(TerraController terraController);
+
+    void updateTC(TerraController terraController);
+
 };
 
 #endif //CLION_TERRACONTROLLER_H

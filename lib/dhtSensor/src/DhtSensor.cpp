@@ -49,17 +49,22 @@ void DhtSensor::setHumidity(float humidity) {
 String DhtSensor::toString() {
     String string("temperature: ");
     string.concat(this->temperature);
-    string.concat("humidity: ");
+    string.concat(" humidity: ");
     string.concat(this->humidity);
     return string;
 }
 
 String DhtSensor::toJson() {
-    String string = this->toString();
-    string.replace("temperature", "{\"temperature\"");
-    string.replace("humidity", ",\"humidity\"");
-    string.concat("}");
-    return string;
+    String json = this->toString();
+    if (json.indexOf("NAN") > -1) {
+        json.replace("NAN", "\"NAN\"");
+    }
+    json.replace("temperature", "{\"temperature\"");
+    json.replace(" humidity", ",\"humidity\"");
+    json.concat("}");
+    Serial.println(json);
+
+    return json;
 }
 
 

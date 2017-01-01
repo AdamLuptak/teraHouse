@@ -56,6 +56,7 @@ String Router::route(String httpRequest, TerraController &terraController, UIPCl
             response = "{\"error\" : \"unexpected error\"}";
         }
     }
+    //EEPROM.put(50, terraController);
     return response;
 }
 

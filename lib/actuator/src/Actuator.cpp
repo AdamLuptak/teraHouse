@@ -4,10 +4,14 @@
 
 #include "Actuator.h"
 
+#define ON_RELAY LOW;
+#define OFF_RELAY HIGH;
+
 Actuator::Actuator() {}
 
 Actuator::Actuator(uint8_t pin) {
     pinMode(pin, OUTPUT);
+    digitalWrite(pin, HIGH);
     this->pin = pin;
 }
 
@@ -23,19 +27,28 @@ float Actuator::getActionTime(int numActionTime) {
     return actionTimes[numActionTime];
 }
 
-void Actuator::update(int hour, int minutes) {
+//TODO add seconds for shor time interval
+void Actuator::update(int hour, int minute, int second) {
 
-    float time = hour + ((float) minutes / 100);
+    float time = hour + ((float) minute / 100);
+    Serial.println(time);
+
+    time += (float)second / 6000;
+    Serial.println(time,5);
+
+    //((hour*60 + minute )*60 + second)
+    //long time = (long) ((hour * 60 + minute) * 60 + second);
+
     for (int index = 0; index < numActionTimes; ++index) {
 
         float actionTime = actionTimes[index];
         float duration = durations[index];
 
         if (time >= actionTime && time < actionTime + duration) {
-            pinState = true;
+            pinState = ON_RELAY;
             break;
         } else {
-            pinState = false;
+            pinState = OFF_RELAY;
         }
     }
     if (!digitalRead(pin) == pinState) {

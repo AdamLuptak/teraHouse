@@ -23,7 +23,7 @@ public:
 
     Actuator(uint8_t pin, int startTime, float actionTimes[], float durations[], String &endpoint);
 
-    void update(int Hour, int minutes);
+    void update(int Hour, int minute, int i);
 
     void setPin(uint8_t pin);
 
