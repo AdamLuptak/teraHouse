@@ -29,6 +29,10 @@ void resetCount();
 template<class T>
 int EEPROM_readAnything(int ee, T &value);
 
+void saveActuators();
+
+void loadActuators();
+
 EthernetServer server(80);
 byte mac[] = {0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED};
 IPAddress ip(192, 168, 1, 177);
@@ -52,35 +56,35 @@ String SENSORS = "sensor/";
 String ACTUATOR = "actuator/";
 String ALL = "all/";
 String SHOW_TIME = "get/time";
-
-float dayLightAT[5] = {
-        14.23};
-float dayLightDurations[5] = {
-        0.40};
-static const int dayLightST = 13;
+//21600
+long dayLightAT[5] = {
+        21600};
+long dayLightDurations[5] = {
+        50400};
+static const long dayLightST = 21600;
 static const int dayLightPin = 8;
 Actuator dayLight(dayLightPin, dayLightST, dayLightAT, dayLightDurations, DAYLIGHT);
 
-float evenLightAT[5] = {
-        14.24};
-float evenLightDruations[5] = {
-        0.40};
-static const int evenLightST = 13;
+long evenLightAT[5] = {
+        21600, 0, 0, 0, 0};
+long evenLightDruations[5] = {
+        61200, 0, 0, 0, 0};
+static const int evenLightST = 21600;
 static const int evenLightPin = 9;
 Actuator evenLight(evenLightPin, evenLightST, evenLightAT, evenLightDruations, EVENLIGHT);
 
-float foogAT[5] = {
-        14.10};
-float foogDurations[5] = {
-        0.10};
+long foogAT[5] = {
+        21600, 0, 0, 0, 0};
+long foogDurations[5] = {
+        20, 0, 0, 0, 0};
 static const int foogST = 13;
 static const int foogPin = 10;
 Actuator foog(foogPin, foogST, foogAT, foogDurations, FOOG);
 
-float mistingAT[5] = {
-        14.25, 14.40, 14.50};
-float mistingDurations[5] = {
-        0.005, 0.005, 0.005};
+long mistingAT[5] = {
+        21600, 64800, 0, 0, 0};
+long mistingDurations[5] = {
+        30, 30};
 static const int mistingST = 13;
 static const int mistingPin = 11;
 Actuator misting(mistingPin, mistingST, mistingAT, mistingDurations, MISTING);
@@ -91,9 +95,31 @@ WfSensor wfSensor(wfPin, SEN_3_ENDPOINT);
 //DhtSensor dhtSensor2(3, DHT11, SEN_2_ENDPOINT);
 //DhtSensor dhtSensor3(4, DHT11, SEN_3_ENDPOINT);
 
+Actuator  * actuatorArray[5] = {&dayLight, &evenLight, &foog, &misting};
+
 TerraController tc;
 
+template<class T>
+int EEPROM_writeAnything(int ee, const T &value) {
+    const byte *p = (const byte *) (const void *) &value;
+    unsigned int i;
+    for (i = 0; i < sizeof(value); i++)
+        EEPROM.write(ee++, *p++);
+    return i;
+}
+
+template<class T>
+int EEPROM_readAnything(int ee, T &value) {
+    byte *p = (byte *) (void *) &value;
+    unsigned int i;
+    for (i = 0; i < sizeof(value); i++)
+        *p++ = EEPROM.read(ee++);
+    return i;
+}
+
+
 void setup() {
+
     serialSetup();
     // clearResetCounter();
     resetCount();
@@ -103,7 +129,6 @@ void setup() {
     //loadActuators();
 
     Serial.println("restart device");
-
 
     setTime(14, 20, 56, 1, 1, 11);
 
@@ -128,9 +153,10 @@ void setup() {
     tc.registerActuator(&misting);
     tc.registerActuator(&foog);
 
-    LinkedList<Actuator *> &list = tc.getActuatorList();
-    for (int i = 0; i < list.size(); ++i) {
-        router.registerRoute(&list.get(i)->getEndpoint());
+    LinkedList<Actuator *> &actuatorList = tc.getActuatorList();
+    int addresShift = 50;
+    for (int i = 0; i < actuatorList.size(); ++i) {
+        router.registerRoute(&actuatorList.get(i)->getEndpoint());
     }
 
     LinkedList<Sensor *> &sensorList = tc.getSensorList();
@@ -150,9 +176,29 @@ void setup() {
         Serial.println(*routeList.get(i));
     }
 
+    //saveActuators();
+
+    loadActuators();
+
+    tc.toString();
     wdt_enable(WDTO_8S);     // enable the watchdog
     //tc = EEPROM.get(50,tc);
 }
+
+void loadActuators() {
+    EEPROM.get(50, dayLight);
+    EEPROM.get(100,evenLight);
+    EEPROM.get(150,foog);
+    EEPROM.get(200,misting);
+}
+
+void saveActuators() {
+    EEPROM.put(50, dayLight);
+    EEPROM.put(100,evenLight);
+    EEPROM.put(150,foog);
+    EEPROM.put(200,misting);
+}
+
 
 void resetCount() {
     int counter = EEPROM.read(0);
@@ -237,6 +283,9 @@ void loop() {
         if (timeout) {
             response = "{\"error\" : \"timeout\"}";
         }
+
+        saveActuators();
+        loadActuators();
 
         client.print(HEADER_JSON);
         client.println(response);
