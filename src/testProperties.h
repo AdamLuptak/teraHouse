@@ -8,6 +8,7 @@
 #include <WString.h>
 
 static const int dthPin = 3;
+
 static const int lm35Pin = 10;
 static const int wfPin = 11;
 
@@ -68,9 +69,9 @@ Actuator *actuatorArray[5] = {&dayLight, &evenLight, &foog, &misting};
 /*
  * TeraControler 2 defualt values
  * */
-static const int dthPin2 = 3;
-static const int lm35Pin2 = 10;
-static const int wfPin2 = 11;
+static const int dthPin2 = 4;
+static const int lm35Pin2 = 12;
+static const int wfPin2 = 1;
 
 String SEN_1_ENDPOINT2 = "sensor/sen1";
 String SEN_2_ENDPOINT2 = "sensor/sen2";
@@ -87,19 +88,19 @@ String ALL2 = "all/";
 String SHOW_TIME2 = "get/time";
 //21600
 long dayLightAT2[5] = {
-        21600};
+        50520};
 long dayLightDurations2[5] = {
-        50400};
-static const long dayLightST2 = 21600;
-static const int dayLightPin2 = 8;
+        600};
+static const long dayLightST2 = 50400;
+static const int dayLightPin2 = 12;
 Actuator dayLight2(dayLightPin2, dayLightST2, dayLightAT2, dayLightDurations2, DAYLIGHT2);
 
 long evenLightAT2[5] = {
-        21600, 0, 0, 0, 0};
+        50520, 0, 0, 0, 0};
 long evenLightDruations2[5] = {
-        61200, 0, 0, 0, 0};
-static const int evenLightST2 = 21600;
-static const int evenLightPin2 = 9;
+        600, 0, 0, 0, 0};
+static const int evenLightST2 = 50400;
+static const int evenLightPin2 = 13;
 Actuator evenLight2(evenLightPin2, evenLightST2, evenLightAT2, evenLightDruations2, EVENLIGHT2);
 
 long foogAT2[5] = {

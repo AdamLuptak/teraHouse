@@ -10,7 +10,7 @@
 #include <WfSensor.h>
 #include "EEPROM.h"
 
-#define PROPERTIES 12
+#define PROPERTIES 1
 #if PROPERTIES == 1
 #include "properties.h"
 #else
@@ -90,11 +90,44 @@ void setup() {
                        router,
                        &TIME, &MANUAL_CONTROL, &SENSORS, &ALL, &ACTUATOR, &SHOW_TIME, &tc1BaseEdpoint);
 
-    setTerraController(dhtSensor2, lm352, wfSensor2,
-                       dayLight2, evenLight2, misting2, foog2,
-                       tc2,
-                       router2,
-                       &TIME2, &MANUAL_CONTROL2, &SENSORS2, &ALL2, &ACTUATOR2, &SHOW_TIME2, &tc2BaseEdpoint);
+//    setTerraController(dhtSensor2, lm352, wfSensor2,
+//                       dayLight2, evenLight2, misting2, foog2,
+//                       tc2,
+//                       router2,
+//                       &TIME2, &MANUAL_CONTROL2, &SENSORS2, &ALL2, &ACTUATOR2, &SHOW_TIME2, &tc2BaseEdpoint);
+
+    dhtSensor2.begin();
+
+    tc2.registerSensor(&dhtSensor2);
+    tc2.registerSensor(&lm352);
+
+    tc2.registerActuator(&dayLight2);
+    tc2.registerActuator(&evenLight2);
+
+    LinkedList<Actuator *> &list = tc2.getActuatorList();
+    for (int i = 0; i < list.size(); ++i) {
+        router2.registerRoute(&list.get(i)->getEndpoint());
+    }
+
+    LinkedList<Sensor *> &list2 = tc2.getSensorList();
+    for (int i = 0; i < list2.size(); ++i) {
+        router2.registerRoute(&list2.get(i)->getEndpoint());
+    }
+
+    router2.registerBaseEndpoint(&tc2BaseEdpoint);
+
+    router2.registerRoute(&TIME2);
+    router2.registerRoute(&MANUAL_CONTROL2);
+    router2.registerRoute(&SENSORS2);
+    router2.registerRoute(&ALL2);
+    router2.registerRoute(&ACTUATOR2);
+    router2.registerRoute(&SHOW_TIME2);
+
+    LinkedList<String *> &routeList = router2.getRouteList();
+    for (int i = 0; i < routeList.size(); ++i) {
+        Serial.println(*routeList.get(i));
+    }
+
     tc1.toString();
     tc2.toString();
 
@@ -201,6 +234,8 @@ void digitalClockDisplay() {
 void updateTemperatures() {
     Serial.println(analogRead(11));
     tc1.update(hour(), minute(), second());
+    tc2.update(hour(), minute(), second());
+
     delay(1);
 }
 
@@ -235,8 +270,6 @@ void loop() {
         }
 
         String requestEndpoint = httpParser.parseEndpoint(bodyHeader);
-        Serial.println(requestEndpoint);
-         
         String response;
 
         if (requestEndpoint.startsWith(tc1BaseEdpoint)) {

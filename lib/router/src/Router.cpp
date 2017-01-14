@@ -13,6 +13,7 @@ String Router::route(String httpRequest, TerraController &terraController, UIPCl
     int routeListSize = routeList.size();
     for (int i = 0; i < routeListSize; ++i) {
         String requestEndpoint = this->httpParser.parseEndpoint(httpRequest);
+
         if (*routeList.get(i) == requestEndpoint) {
 
             if (requestEndpoint.startsWith(ACTUATOR_END)) {
@@ -97,7 +98,7 @@ boolean Router::updateTime(String httpRequest) {
     Serial.println(hour);
 
     if (hour && minute && second && day && month && year > 0 && hour <= 24 && minute <= 60 && second <= 60 &&
-        day <= 7 && month <= 12 & year <= 24) {
+        day <= 31 && month <= 12 & year <= 24) {
         setTime(hour, minute, second, day, month, year);
         return true;
     } else {
