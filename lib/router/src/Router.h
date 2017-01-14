@@ -30,12 +30,15 @@ public:
 
     void registerRoute(String *route);
 
-    LinkedList<String *> &getRouteList();
+    LinkedList<String* > &getRouteList();
 
     void setRouteList(LinkedList<String *> &routeList);
 
+    void registerBaseEndpoint(String *route);
+
 private:
-    LinkedList<String *> routeList = LinkedList<String *>();
+    LinkedList<String*> routeList = LinkedList<String *>();
+    LinkedList<String*> baseEndpointList = LinkedList<String *>();
     HttpParser httpParser;
 
     String timeToJson();

@@ -15,34 +15,30 @@ Actuator::Actuator(uint8_t pin) {
     this->pin = pin;
 }
 
-Actuator::Actuator(uint8_t pin, int startTime, float *actionTimes, float *durations, String &endpoint) {
-    this->actionTimes = actionTimes;
-    this->durations = durations;
+Actuator::Actuator(uint8_t pin, long startTime, long *actionTimes, long *durations, String &endpoint) {
+
+    for (int i = 0; i < 5; ++i) {
+        this->actionTimes[i] = actionTimes[i];
+    }
+
+    memcpy( this->durations, durations, sizeof(durations) );
+
     this->endpoint = endpoint;
     this->pin = pin;
     this->startTime = startTime;
 }
 
-float Actuator::getActionTime(int numActionTime) {
+long Actuator::getActionTime(int numActionTime) {
     return actionTimes[numActionTime];
 }
 
-//TODO add seconds for shor time interval
 void Actuator::update(int hour, int minute, int second) {
 
-    float time = hour + ((float) minute / 100);
-    Serial.println(time);
-
-    time += (float)second / 6000;
-    Serial.println(time,5);
-
-    //((hour*60 + minute )*60 + second)
-    //long time = (long) ((hour * 60 + minute) * 60 + second);
-
+    long time = timeToSecond(hour, minute, second);
     for (int index = 0; index < numActionTimes; ++index) {
 
-        float actionTime = actionTimes[index];
-        float duration = durations[index];
+        long actionTime = actionTimes[index];
+        long duration = durations[index];
 
         if (time >= actionTime && time < actionTime + duration) {
             pinState = ON_RELAY;
@@ -56,27 +52,26 @@ void Actuator::update(int hour, int minute, int second) {
     }
 }
 
-void Actuator::setDuration(int duration, float durationPeriod) {
+void Actuator::setDuration(int duration, long durationPeriod) {
     this->durations[duration] = durationPeriod;
 }
 
-void Actuator::setDurations(float *durations) {
-    this->durations = durations;
-}
+void Actuator::setDurations(long *durations) {
+    memcpy( this->durations, durations, sizeof(durations) );}
 
-void Actuator::setActionTime(int numActionTime, float actionTime) {
+void Actuator::setActionTime(int numActionTime, long actionTime) {
     this->actionTimes[numActionTime] = actionTime;
 }
 
-void Actuator::setActionTimes(float *actionTimes) {
-    this->actionTimes = actionTimes;
+void Actuator::setActionTimes(long *actionTimes) {
+    memcpy( this->actionTimes, actionTimes, sizeof(actionTimes));
 }
 
-float *Actuator::getDurations() {
+long *Actuator::getDurations() {
     return this->durations;
 }
 
-float *Actuator::getActionTimes() {
+long *Actuator::getActionTimes() {
     return this->actionTimes;
 }
 
@@ -84,7 +79,7 @@ int Actuator::getPin() {
     return this->pin;
 }
 
-int Actuator::getStartTime() {
+long Actuator::getStartTime() {
     return this->startTime;
 }
 
@@ -92,11 +87,11 @@ void Actuator::setPin(uint8_t pin) {
     this->pin = pin;
 }
 
-void Actuator::setStartTime(int startTime) {
+void Actuator::setStartTime(long startTime) {
     this->startTime = startTime;
 }
 
-float Actuator::getDuration(int index) {
+long Actuator::getDuration(int index) {
     return this->durations[index];
 }
 
@@ -135,7 +130,7 @@ String Actuator::toString() {
 
 String Actuator::toJson() {
     char buff[200];
-    sprintf(buff, "{\"pin\": %d, \"startTime\":%d, \"state\":%d, \"endpoint\": \"%s\","
+    sprintf(buff, "{\"pin\": %d, \"startTime\":%lu, \"state\":%d, \"endpoint\": \"%s\","
             "\"intervals\":", this->pin, this->startTime, this->pinState, this->endpoint.c_str());
 
     String string(buff);
@@ -164,3 +159,21 @@ String &Actuator::getEndpoint() {
 void Actuator::setEndpoint(String &endpoint) {
     Actuator::endpoint = endpoint;
 }
+
+long Actuator::timeToSecond(int hour, int minute, int second) {
+    return (long) hour * 3600 + (long) minute * 60 + second;
+}
+
+String Actuator::timeToString(long seconds) {
+    int hour = (int) (seconds / 3600);
+    int minute = (int) (seconds / 60 % 60);
+    int second = (int) (seconds % 60);
+    String timeString(hour);
+    timeString.concat(":");
+    timeString.concat(minute);
+    timeString.concat(":");
+    timeString.concat(second);
+    return timeString;
+}
+
+

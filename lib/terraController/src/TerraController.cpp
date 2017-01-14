@@ -41,6 +41,8 @@ void TerraController::toString() {
         Serial.println(pActuator->toString());
     }
 
+     Serial.println("pre sensorzaramo");
+
     int sensorListSize = sensorList.size();
     for (int i = 0; i < sensorListSize; ++i) {
         Sensor *pSensor = sensorList.get(i);

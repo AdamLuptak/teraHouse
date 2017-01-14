@@ -2,8 +2,9 @@
 // Created by adam on 12.1.2017.
 //
 
-#ifndef CLION_TESTPROPERTIES_H
-#define CLION_TESTPROPERTIES_H
+#ifndef CLION_PROPERTIES_H
+#define CLION_PROPERTIES_H
+
 
 #include <WString.h>
 
@@ -26,34 +27,34 @@ String ALL = "all/";
 String SHOW_TIME = "get/time";
 //21600
 long dayLightAT[5] = {
-        50520}; //14:02:00
+        21600};
 long dayLightDurations[5] = {
-        600};//00:10:00
-static const long dayLightST = 50400;
+        50400};
+static const long dayLightST = 21600;
 static const int dayLightPin = 8;
 Actuator dayLight(dayLightPin, dayLightST, dayLightAT, dayLightDurations, DAYLIGHT);
 
 long evenLightAT[5] = {
-        50700, 0, 0, 0, 0};//14:05:00
+        21600, 0, 0, 0, 0};
 long evenLightDruations[5] = {
-        600, 0, 0, 0, 0};//00:10:00
-static const long evenLightST = 50400;
+        61200, 0, 0, 0, 0};
+static const int evenLightST = 21600;
 static const int evenLightPin = 9;
 Actuator evenLight(evenLightPin, evenLightST, evenLightAT, evenLightDruations, EVENLIGHT);
 
 long foogAT[5] = {
-        50580, 0, 0, 0, 0};//14:03:00
+        21600, 0, 0, 0, 0};
 long foogDurations[5] = {
-        20, 0, 0, 0, 0};//00:00:20
-static const long foogST = 50400;
+        20, 0, 0, 0, 0};
+static const int foogST = 13;
 static const int foogPin = 10;
 Actuator foog(foogPin, foogST, foogAT, foogDurations, FOOG);
 
 long mistingAT[5] = {
-        50800, 50900, 0, 0, 0};//14:06:40
+        21600, 64800, 0, 0, 0};
 long mistingDurations[5] = {
-        30, 30};//00:00:20
-static const long mistingST = 50400;
+        30, 30};
+static const int mistingST = 13;
 static const int mistingPin = 11;
 Actuator misting(mistingPin, mistingST, mistingAT, mistingDurations, MISTING);
 
@@ -123,12 +124,10 @@ Lm35 lm352(lm35Pin2, SEN_2_ENDPOINT2);
 WfSensor wfSensor2(wfPin2, SEN_3_ENDPOINT2);
 //DhtSensor dhtSensor2(3, DHT11, SEN_2_ENDPOINT);
 //DhtSensor dhtSensor3(4, DHT11, SEN_3_ENDPOINT);
+Sensor *sensors[50];
+
+
 TerraController tc1;
 TerraController tc2;
 
-String tc1BaseEdpoint = "tc1/";
-String tc2BaseEdpoint = "tc2/";
-
-TerraController* tcArray[2] = {&tc1, &tc2};
-
-#endif //CLION_TESTPROPERTIES_H
+#endif //CLION_PROPERTIES_H

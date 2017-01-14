@@ -21,33 +21,33 @@ public:
 
     Actuator(uint8_t pin);
 
-    Actuator(uint8_t pin, int startTime, float actionTimes[], float durations[], String &endpoint);
+    Actuator(uint8_t pin, long startTime, long actionTimes[], long durations[], String &endpoint);
 
-    void update(int Hour, int minute, int i);
+    void update(int Hour, int minute, int second);
 
     void setPin(uint8_t pin);
 
-    void setStartTime(int startTime);
+    void setStartTime(long startTime);
 
-    void setDuration(int duration, float durationPeriod);
+    void setDuration(int duration, long durationPeriod);
 
-    void setDurations(float *durations);
+    void setDurations(long *durations);
 
-    void setActionTime(int numActionTime, float actionTime);
+    void setActionTime(int numActionTime, long actionTime);
 
-    void setActionTimes(float *actionTimes);
+    void setActionTimes(long *actionTimes);
 
-    float getActionTime(int numActionTime);
+    long getActionTime(int numActionTime);
 
-    float getDuration(int index);
+    long getDuration(int index);
 
-    float *getDurations();
+    long *getDurations();
 
-    float *getActionTimes();
+    long *getActionTimes();
 
     int getPin();
 
-    int getStartTime();
+    long getStartTime();
 
     String toString();
 
@@ -64,11 +64,13 @@ public:
 private:
     String endpoint = "empty";
     int numActionTimes = 5;
-    float *durations;
-    float *actionTimes;
+    long durations [5];
+    long actionTimes [5];
     uint8_t pin;
-    int startTime;
+    long startTime;
     boolean pinState = false;
+    String timeToString(long seconds);
+    long timeToSecond(int hour, int minute, int second);
 };
 
 

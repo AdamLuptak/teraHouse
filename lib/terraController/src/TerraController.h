@@ -51,7 +51,7 @@ public:
     String updateActuator(String &endpoint, String &httpRequest);
 
 private:
-    LinkedList<Sensor *> sensorList = LinkedList<Sensor *>();
+    LinkedList<Sensor*> sensorList = LinkedList<Sensor *>();
     LinkedList<Actuator *> actuatorList = LinkedList<Actuator *>();
     JsonAdapter adapter;
     boolean manual = false;

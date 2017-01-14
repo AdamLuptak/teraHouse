@@ -10,13 +10,10 @@ String Router::route(String httpRequest, TerraController &terraController, UIPCl
     httpParser.cleanRequest(httpRequest);
 
     String response = "";
-
     int routeListSize = routeList.size();
     for (int i = 0; i < routeListSize; ++i) {
         String requestEndpoint = this->httpParser.parseEndpoint(httpRequest);
-
         if (*routeList.get(i) == requestEndpoint) {
-            Serial.println(requestEndpoint);
 
             if (requestEndpoint.startsWith(ACTUATOR_END)) {
                 if (requestEndpoint.length() > 9) {
@@ -107,3 +104,9 @@ boolean Router::updateTime(String httpRequest) {
         return false;
     }
 }
+
+void Router::registerBaseEndpoint(String *route) {
+    baseEndpointList.add(route);
+}
+
+

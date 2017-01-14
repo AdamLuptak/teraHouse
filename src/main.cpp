@@ -1,4 +1,4 @@
-#include "Arduino.h"]
+#include "Arduino.h"
 #include <TerraController.h>
 #include <TimeLib.h>
 #include <DhtSensor.h>
@@ -10,7 +10,29 @@
 #include <WfSensor.h>
 #include "EEPROM.h"
 
+#define PROPERTIES 12
+#if PROPERTIES == 1
+#include "properties.h"
+#else
+
+#include  "testProperties.h"
+
+#endif
+
+struct Date {
+    int hour;
+    int minute;
+    int second;
+    int day;
+    int month;
+    int year;
+};
+
+Date date = {14, 0, 0, 14, 1, 17};
+
 Router router;
+
+Router router2;
 
 Timer timer;
 
@@ -29,108 +51,32 @@ void resetCount();
 template<class T>
 int EEPROM_readAnything(int ee, T &value);
 
-void saveActuators();
-
-void loadActuators();
+void setTerraController(DhtSensor &sensor, Lm35 &lm35, WfSensor &wfSensor, Actuator &daylight, Actuator &evenLight,
+                        Actuator &misting, Actuator &foog, TerraController &controller, Router &router,
+                        String *timeEndpoint, String *manualEndpoint, String *sensorEndpoint, String *allEndpoint,
+                        String *actuatorEndpoint, String *showTimeEndpoint, String *baseEndpoint);
 
 EthernetServer server(80);
 byte mac[] = {0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED};
 IPAddress ip(192, 168, 1, 177);
+HttpParser httpParser;
 static const char *const HEADER_JSON = "HTTP/1.0 200 OK\r\n"
         "Content-Type: application/json\r\n"
         "Connection: close\r\n\r\n";
-static const int dthPin = 3;
-static const int lm35Pin = 10;
-static const int wfPin = 11;
-
-String SEN_1_ENDPOINT = "sensor/sen1";
-String SEN_2_ENDPOINT = "sensor/sen2";
-String SEN_3_ENDPOINT = "sensor/sen3";
-String DAYLIGHT = "actuator/dayLight";
-String EVENLIGHT = "actuator/evenLight";
-String MISTING = "actuator/misting";
-String TIME = "setup/time";
-String MANUAL_CONTROL = "setup/manualControl";
-String FOOG = "actuator/foog";
-String SENSORS = "sensor/";
-String ACTUATOR = "actuator/";
-String ALL = "all/";
-String SHOW_TIME = "get/time";
-//21600
-long dayLightAT[5] = {
-        21600};
-long dayLightDurations[5] = {
-        50400};
-static const long dayLightST = 21600;
-static const int dayLightPin = 8;
-Actuator dayLight(dayLightPin, dayLightST, dayLightAT, dayLightDurations, DAYLIGHT);
-
-long evenLightAT[5] = {
-        21600, 0, 0, 0, 0};
-long evenLightDruations[5] = {
-        61200, 0, 0, 0, 0};
-static const int evenLightST = 21600;
-static const int evenLightPin = 9;
-Actuator evenLight(evenLightPin, evenLightST, evenLightAT, evenLightDruations, EVENLIGHT);
-
-long foogAT[5] = {
-        21600, 0, 0, 0, 0};
-long foogDurations[5] = {
-        20, 0, 0, 0, 0};
-static const int foogST = 13;
-static const int foogPin = 10;
-Actuator foog(foogPin, foogST, foogAT, foogDurations, FOOG);
-
-long mistingAT[5] = {
-        21600, 64800, 0, 0, 0};
-long mistingDurations[5] = {
-        30, 30};
-static const int mistingST = 13;
-static const int mistingPin = 11;
-Actuator misting(mistingPin, mistingST, mistingAT, mistingDurations, MISTING);
-
-DhtSensor dhtSensor1(dthPin, DHT11, SEN_1_ENDPOINT);
-Lm35 lm35(lm35Pin, SEN_2_ENDPOINT);
-WfSensor wfSensor(wfPin, SEN_3_ENDPOINT);
-//DhtSensor dhtSensor2(3, DHT11, SEN_2_ENDPOINT);
-//DhtSensor dhtSensor3(4, DHT11, SEN_3_ENDPOINT);
-
-Actuator  * actuatorArray[5] = {&dayLight, &evenLight, &foog, &misting};
-
-TerraController tc;
-
-template<class T>
-int EEPROM_writeAnything(int ee, const T &value) {
-    const byte *p = (const byte *) (const void *) &value;
-    unsigned int i;
-    for (i = 0; i < sizeof(value); i++)
-        EEPROM.write(ee++, *p++);
-    return i;
-}
-
-template<class T>
-int EEPROM_readAnything(int ee, T &value) {
-    byte *p = (byte *) (void *) &value;
-    unsigned int i;
-    for (i = 0; i < sizeof(value); i++)
-        *p++ = EEPROM.read(ee++);
-    return i;
-}
 
 
 void setup() {
 
     serialSetup();
-    // clearResetCounter();
     resetCount();
-
-    //saveActuators();
-
-    //loadActuators();
-
     Serial.println("restart device");
 
-    setTime(14, 20, 56, 1, 1, 11);
+    setTime(date.hour,
+            date.minute,
+            date.second,
+            date.day,
+            date.month,
+            date.year);
 
     setPins();
 
@@ -138,65 +84,75 @@ void setup() {
 
     setupEthernet();
 
-    dhtSensor1.begin();
-//    dhtSensor2.begin();
-//    dhtSensor3.begin();
+    setTerraController(dhtSensor1, lm35, wfSensor,
+                       dayLight, evenLight, misting, foog,
+                       tc1,
+                       router,
+                       &TIME, &MANUAL_CONTROL, &SENSORS, &ALL, &ACTUATOR, &SHOW_TIME, &tc1BaseEdpoint);
 
-    tc.registerSensor(&dhtSensor1);
-    tc.registerSensor(&lm35);
-    tc.registerSensor(&wfSensor);
-//    tc.registerSensor(&dhtSensor2);
-//    tc.registerSensor(&dhtSensor3);
+    setTerraController(dhtSensor2, lm352, wfSensor2,
+                       dayLight2, evenLight2, misting2, foog2,
+                       tc2,
+                       router2,
+                       &TIME2, &MANUAL_CONTROL2, &SENSORS2, &ALL2, &ACTUATOR2, &SHOW_TIME2, &tc2BaseEdpoint);
+    tc1.toString();
+    tc2.toString();
 
-    tc.registerActuator(&dayLight);
-    tc.registerActuator(&evenLight);
-    tc.registerActuator(&misting);
-    tc.registerActuator(&foog);
+    wdt_enable(WDTO_8S);     // enable the watchdog
+}
 
-    LinkedList<Actuator *> &actuatorList = tc.getActuatorList();
-    int addresShift = 50;
-    for (int i = 0; i < actuatorList.size(); ++i) {
-        router.registerRoute(&actuatorList.get(i)->getEndpoint());
+void setTerraController(DhtSensor &sensor, Lm35 &lm35, WfSensor &wfSensor, Actuator &daylight, Actuator &evenLight,
+                        Actuator &misting, Actuator &foog, TerraController &controller, Router &router,
+                        String *timeEndpoint, String *manualEndpoint, String *sensorEndpoint, String *allEndpoint,
+                        String *actuatorEndpoint, String *showTimeEndpoint, String *baseEndpoint) {
+    sensor.begin();
+
+    controller.registerSensor(&sensor);
+    controller.registerSensor(&lm35);
+    controller.registerSensor(&wfSensor);
+
+    controller.registerActuator(&daylight);
+    controller.registerActuator(&evenLight);
+    controller.registerActuator(&misting);
+    controller.registerActuator(&foog);
+
+    LinkedList<Actuator *> &list = controller.getActuatorList();
+    for (int i = 0; i < list.size(); ++i) {
+        router.registerRoute(&list.get(i)->getEndpoint());
     }
 
-    LinkedList<Sensor *> &sensorList = tc.getSensorList();
+    LinkedList<Sensor *> &sensorList = controller.getSensorList();
     for (int i = 0; i < sensorList.size(); ++i) {
         router.registerRoute(&sensorList.get(i)->getEndpoint());
     }
 
-    router.registerRoute(&TIME);
-    router.registerRoute(&MANUAL_CONTROL);
-    router.registerRoute(&SENSORS);
-    router.registerRoute(&ALL);
-    router.registerRoute(&ACTUATOR);
-    router.registerRoute(&SHOW_TIME);
+    router.registerBaseEndpoint(baseEndpoint);
+
+    router.registerRoute(timeEndpoint);
+    router.registerRoute(manualEndpoint);
+    router.registerRoute(sensorEndpoint);
+    router.registerRoute(allEndpoint);
+    router.registerRoute(actuatorEndpoint);
+    router.registerRoute(showTimeEndpoint);
 
     LinkedList<String *> &routeList = router.getRouteList();
     for (int i = 0; i < routeList.size(); ++i) {
         Serial.println(*routeList.get(i));
     }
-
-    //saveActuators();
-
-    loadActuators();
-
-    tc.toString();
-    wdt_enable(WDTO_8S);     // enable the watchdog
-    //tc = EEPROM.get(50,tc);
 }
 
 void loadActuators() {
     EEPROM.get(50, dayLight);
-    EEPROM.get(100,evenLight);
-    EEPROM.get(150,foog);
-    EEPROM.get(200,misting);
+    EEPROM.get(100, evenLight);
+    EEPROM.get(150, foog);
+    EEPROM.get(200, misting);
 }
 
 void saveActuators() {
     EEPROM.put(50, dayLight);
-    EEPROM.put(100,evenLight);
-    EEPROM.put(150,foog);
-    EEPROM.put(200,misting);
+    EEPROM.put(100, evenLight);
+    EEPROM.put(150, foog);
+    EEPROM.put(200, misting);
 }
 
 
@@ -244,7 +200,7 @@ void digitalClockDisplay() {
 
 void updateTemperatures() {
     Serial.println(analogRead(11));
-    tc.update(hour(), minute(), second());
+    tc1.update(hour(), minute(), second());
     delay(1);
 }
 
@@ -265,7 +221,6 @@ void loop() {
                 timeout = true;
                 break;
             }
-
             if (client.available()) {
                 char actual = (char) client.read();
                 bodyHeader.concat(actual);
@@ -279,13 +234,24 @@ void loop() {
             }
         }
 
-        String response = router.route(bodyHeader, tc, client);
+        String requestEndpoint = httpParser.parseEndpoint(bodyHeader);
+        Serial.println(requestEndpoint);
+         
+        String response;
+
+        if (requestEndpoint.startsWith(tc1BaseEdpoint)) {
+            bodyHeader.replace(tc1BaseEdpoint,"");
+            response = router.route(bodyHeader, tc1, client);
+            response.replace("TerraController","TerraController1");
+        } else if (requestEndpoint.startsWith(tc2BaseEdpoint)) {
+            bodyHeader.replace(tc2BaseEdpoint,"");
+            response = router2.route(bodyHeader, tc2, client);
+            response.replace("TerraController","TerraController2");
+        }
+
         if (timeout) {
             response = "{\"error\" : \"timeout\"}";
         }
-
-        saveActuators();
-        loadActuators();
 
         client.print(HEADER_JSON);
         client.println(response);
@@ -296,9 +262,7 @@ void loop() {
     }
 
     timer.update();
-
     wdt_reset();
-
 }
 
 
