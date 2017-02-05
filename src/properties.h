@@ -29,7 +29,7 @@ String SHOW_TIME = "get/time";
 long dayLightAT[5] = {
         21600}; //06:00:00
 long dayLightDurations[5] = {
-        36000};//10:00:00
+        50400};//14:00:00
 static const long dayLightST = 21600;
 static const int dayLightPin = 8;
 Actuator dayLight(dayLightPin, dayLightST, dayLightAT, dayLightDurations, DAYLIGHT);
@@ -37,7 +37,7 @@ Actuator dayLight(dayLightPin, dayLightST, dayLightAT, dayLightDurations, DAYLIG
 long evenLightAT[5] = {
         21600, 0, 0, 0, 0};//06:00:00
 long evenLightDruations[5] = {
-        43200, 0, 0, 0, 0};//12:00:00
+        61200, 0, 0, 0, 0};//17:00:00
 static const long evenLightST = 21600;
 static const int evenLightPin = 9;
 Actuator evenLight(evenLightPin, evenLightST, evenLightAT, evenLightDruations, EVENLIGHT);
@@ -53,7 +53,7 @@ Actuator foog(foogPin, foogST, foogAT, foogDurations, FOOG);
 long mistingAT[5] = {
         21600, 64800, 0, 0, 0};//06:00:00, 18:00:00
 long mistingDurations[5] = {
-        30, 30};//00:00:30
+        30, 30, 0, 0, 0};//00:00:30
 static const long mistingST = 21600;
 static const int mistingPin = 11;
 Actuator misting(mistingPin, mistingST, mistingAT, mistingDurations, MISTING);
@@ -90,7 +90,7 @@ String SHOW_TIME2 = "get/time";
 long dayLightAT2[5] = {
         21600};//06:00:00
 long dayLightDurations2[5] = {
-        36000};//10:00:00
+        50400};//14:00:00
 static const long dayLightST2 = 21600;
 static const int dayLightPin2 = 10;
 Actuator dayLight2(dayLightPin2, dayLightST2, dayLightAT2, dayLightDurations2, DAYLIGHT2);
@@ -98,7 +98,7 @@ Actuator dayLight2(dayLightPin2, dayLightST2, dayLightAT2, dayLightDurations2, D
 long evenLightAT2[5] = {
         21600, 0, 0, 0, 0};//06:00:00
 long evenLightDruations2[5] = {
-        43200, 0, 0, 0, 0};//12:00:00
+        61200, 0, 0, 0, 0};//17:00:00
 static const int evenLightST2 = 21600;//06:00:00
 static const int evenLightPin2 = 12;
 Actuator evenLight2(evenLightPin2, evenLightST2, evenLightAT2, evenLightDruations2, EVENLIGHT2);

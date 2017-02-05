@@ -202,11 +202,11 @@ String TerraController::updateActuator(String &endpoint, String &httpRequest) {
 }
 
 boolean TerraController::isPinAvialable(uint8_t pin) {
-    for (int j = 0; j < actuatorList.size(); ++j) {
-        Actuator *pActuator = actuatorList.get(j);
-        if (pActuator->getPin() == pin)
-            return false;
-    }
+//    for (int j = 0; j < actuatorList.size(); ++j) {
+//        Actuator *pActuator = actuatorList.get(j);
+//        if (pActuator->getPin() == pin)
+//            return false;
+//    }
     return true;
 }
 

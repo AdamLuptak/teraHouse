@@ -21,8 +21,9 @@ Actuator::Actuator(uint8_t pin, long startTime, long *actionTimes, long *duratio
         this->actionTimes[i] = actionTimes[i];
     }
 
-    memcpy( this->durations, durations, sizeof(durations) );
-
+    for (int i = 0; i < 5; ++i) {
+        this->durations[i] = durations[i];
+    }
     this->endpoint = endpoint;
     this->pin = pin;
     this->startTime = startTime;
