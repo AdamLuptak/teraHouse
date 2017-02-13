@@ -41,7 +41,7 @@ void TerraController::toString() {
         Serial.println(pActuator->toString());
     }
 
-     Serial.println("pre sensorzaramo");
+    Serial.println("pre sensorzaramo");
 
     int sensorListSize = sensorList.size();
     for (int i = 0; i < sensorListSize; ++i) {
@@ -85,27 +85,62 @@ void TerraController::update(int hour, int minute, int second) {
 
 String TerraController::toJson() {
     String json("{\"TerraController\":{");
+    json.concat("\"name\": \"name\",");
+    json.concat("\"actuators\": [");
     int actuatorSize = actuatorList.size();
     for (int i = 0; i < actuatorSize; ++i) {
         Actuator *pActuator = actuatorList.get(i);
-        json.concat("\"");
-        json.concat(pActuator->getEndpoint());
-        json.concat("\":");
-        json.concat(pActuator->toJson());
+        json.concat("{");
+        json.concat("\"name\": \"" + pActuator->getName() + "\",");
+        json.concat("\"pin\":");
+        json.concat(pActuator->getPin());
         json.concat(",");
+        json.concat("\"state\":");
+        json.concat(pActuator->getPinState());
+        json.concat(",");
+        json.concat("\"endpoint\": \"" + pActuator->getEndpoint() + "\",");
+        json.concat("\"intervals\":");
+        json.concat("[");
+        int intervalsSize = 5;
+        for (int j = 0; j < intervalsSize; ++j) {
+            long time = pActuator->getActionTime(j);
+            long duration = pActuator->getDuration(j);
+            json.concat("{");
+            json.concat("\"actionTime\":");
+            json.concat(time);
+            json.concat(",");
+            json.concat("\"duration\":");
+            json.concat(duration);
+            json.concat("}");
+            if (j != intervalsSize - 1) {
+                json.concat(",");
+            }
+        }
+        json.concat("]");
+        json.concat("}");
+        if (i != actuatorSize - 1) {
+            json.concat(",");
+        }
     }
+    json.concat("]");
+    json.concat(",");
+    json.concat("\"sensors\": [");
 
     int sensorListSize = sensorList.size();
     for (int i = 0; i < sensorListSize; ++i) {
-        json.concat("\"Sensor");
-        json.concat(i);
-        json.concat("\":");
         Sensor *pSensor = sensorList.get(i);
+
+        json.concat("{");
+        json.concat("\"name\": \"" + pSensor->getName() + "\",");
+
         json.concat(pSensor->toJson());
+        json.concat("}");
         if (i != sensorListSize - 1)
             json.concat(",");
     }
-    json.concat("}}\n");
+    json.concat("]");
+    json.concat("}");
+    json.concat("}");
 
     return json;
 }
@@ -266,5 +301,5 @@ void TerraController::updateTC(TerraController terraController) {
 }
 
 TerraController TerraController::read(TerraController &terraController) {
-    return EEPROM.get(50,terraController);
+    return EEPROM.get(50, terraController);
 }

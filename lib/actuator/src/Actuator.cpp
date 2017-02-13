@@ -15,7 +15,7 @@ Actuator::Actuator(uint8_t pin) {
     this->pin = pin;
 }
 
-Actuator::Actuator(uint8_t pin, long startTime, long *actionTimes, long *durations, String &endpoint) {
+Actuator::Actuator(uint8_t pin, long startTime, long *actionTimes, long *durations, String &endpoint, String &name) {
 
     for (int i = 0; i < 5; ++i) {
         this->actionTimes[i] = actionTimes[i];
@@ -24,6 +24,8 @@ Actuator::Actuator(uint8_t pin, long startTime, long *actionTimes, long *duratio
     for (int i = 0; i < 5; ++i) {
         this->durations[i] = durations[i];
     }
+
+    this->name = name;
     this->endpoint = endpoint;
     this->pin = pin;
     this->startTime = startTime;
@@ -58,14 +60,15 @@ void Actuator::setDuration(int duration, long durationPeriod) {
 }
 
 void Actuator::setDurations(long *durations) {
-    memcpy( this->durations, durations, sizeof(durations) );}
+    memcpy(this->durations, durations, sizeof(durations));
+}
 
 void Actuator::setActionTime(int numActionTime, long actionTime) {
     this->actionTimes[numActionTime] = actionTime;
 }
 
 void Actuator::setActionTimes(long *actionTimes) {
-    memcpy( this->actionTimes, actionTimes, sizeof(actionTimes));
+    memcpy(this->actionTimes, actionTimes, sizeof(actionTimes));
 }
 
 long *Actuator::getDurations() {
@@ -157,7 +160,7 @@ String &Actuator::getEndpoint() {
     return endpoint;
 }
 
-void Actuator::setEndpoint(String &endpoint) {
+void Actuator::setEndpoint(String & endpoint) {
     Actuator::endpoint = endpoint;
 }
 
@@ -175,6 +178,22 @@ String Actuator::timeToString(long seconds) {
     timeString.concat(":");
     timeString.concat(second);
     return timeString;
+}
+
+const String &Actuator::getName() const {
+    return name;
+}
+
+void Actuator::setName(const String &name) {
+    Actuator::name = name;
+}
+
+boolean Actuator::getPinState() const {
+    return pinState;
+}
+
+void Actuator::setPinState(boolean pinState) {
+    Actuator::pinState = pinState;
 }
 
 

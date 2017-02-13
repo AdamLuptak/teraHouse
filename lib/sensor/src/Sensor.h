@@ -22,9 +22,14 @@ public:
 
     void setEndpoint(String &endpoint);
 
+    const String &getName() const;
+
+    void setName(const String &name);
+
 private:
 
 protected:
+    String name = "name";
     String endpoint = "empty";
 };
 

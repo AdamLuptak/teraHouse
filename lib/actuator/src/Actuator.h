@@ -21,7 +21,7 @@ public:
 
     Actuator(uint8_t pin);
 
-    Actuator(uint8_t pin, long startTime, long actionTimes[], long durations[], String &endpoint);
+    Actuator(uint8_t pin, long startTime, long actionTimes[], long durations[], String &endpoint, String &name);
 
     void update(int Hour, int minute, int second);
 
@@ -61,8 +61,17 @@ public:
 
     void setEndpoint(String &endpoint);
 
+    const String &getName() const;
+
+    void setName(const String &name);
+
+    boolean getPinState() const;
+
+    void setPinState(boolean pinState);
+
 private:
     String endpoint = "empty";
+    String name = "name";
     int numActionTimes = 5;
     long durations [5];
     long actionTimes [5];

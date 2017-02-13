@@ -12,3 +12,11 @@ String &Sensor::getEndpoint() {
 void Sensor::setEndpoint(String &endpoint) {
     Sensor::endpoint = endpoint;
 }
+
+const String &Sensor::getName() const {
+    return name;
+}
+
+void Sensor::setName(const String &name) {
+    Sensor::name = name;
+}

@@ -59,9 +59,8 @@ String DhtSensor::toJson() {
     if (json.indexOf("NAN") > -1) {
         json.replace("NAN", "\"NAN\"");
     }
-    json.replace("temperature", "{\"temperature\"");
+    json.replace("temperature", "\"temperature\"");
     json.replace(" humidity", ",\"humidity\"");
-    json.concat("}");
     Serial.println(json);
 
     return json;

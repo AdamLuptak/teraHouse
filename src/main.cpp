@@ -12,7 +12,9 @@
 
 #define PROPERTIES 1
 #if PROPERTIES == 1
+
 #include "properties.h"
+
 #else
 
 #include  "testProperties.h"
@@ -128,8 +130,10 @@ void setup() {
         Serial.println(*routeList.get(i));
     }
 
-    tc1.toString();
-    tc2.toString();
+    String string = tc1.toJson();
+    Serial.println(string);
+
+    //tc2.toString();
 
     wdt_enable(WDTO_8S);     // enable the watchdog
 }
@@ -139,7 +143,9 @@ void setTerraController(DhtSensor &sensor, Lm35 &lm35, WfSensor &wfSensor, Actua
                         String *timeEndpoint, String *manualEndpoint, String *sensorEndpoint, String *allEndpoint,
                         String *actuatorEndpoint, String *showTimeEndpoint, String *baseEndpoint) {
     sensor.begin();
-
+    sensor.setName("dht");
+    lm35.setName("lm35");
+    wfSensor.setName("wfSensor");
     controller.registerSensor(&sensor);
     controller.registerSensor(&lm35);
     controller.registerSensor(&wfSensor);
@@ -273,13 +279,13 @@ void loop() {
         String response;
 
         if (requestEndpoint.startsWith(tc1BaseEdpoint)) {
-            bodyHeader.replace(tc1BaseEdpoint,"");
+            bodyHeader.replace(tc1BaseEdpoint, "");
             response = router.route(bodyHeader, tc1, client);
-            response.replace("TerraController","TerraController1");
+            response.replace("TerraController", "TerraController1");
         } else if (requestEndpoint.startsWith(tc2BaseEdpoint)) {
-            bodyHeader.replace(tc2BaseEdpoint,"");
+            bodyHeader.replace(tc2BaseEdpoint, "");
             response = router2.route(bodyHeader, tc2, client);
-            response.replace("TerraController","TerraController2");
+            response.replace("TerraController", "TerraController2");
         }
 
         if (timeout) {

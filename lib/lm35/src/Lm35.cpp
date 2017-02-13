@@ -29,8 +29,7 @@ String Lm35::toString() {
 
 String Lm35::toJson() {
     String string = this->toString();
-    string.replace("temperature", "{\"temperature\"");
-    string.concat("}");
+    string.replace("temperature", "\"temperature\"");
     return string;
 }
 

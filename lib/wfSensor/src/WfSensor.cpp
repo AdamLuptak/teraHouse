@@ -24,7 +24,6 @@ String WfSensor::toString() {
 
 String WfSensor::toJson() {
     String string = this->toString();
-    string.replace("waterFlowing", "{\"waterFlowing\"");
-    string.concat("}");
+    string.replace("waterFlowing", "\"waterFlowing\"");
     return string;
 }
