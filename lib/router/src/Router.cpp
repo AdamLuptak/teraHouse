@@ -83,7 +83,7 @@ boolean Router::updateTime(String httpRequest) {
     Serial.println(httpRequest);
 
     String body = httpParser.parseBodyMessage(httpRequest);
-    StaticJsonBuffer<1500> jsonBuffer;
+    StaticJsonBuffer<130> jsonBuffer;
     const JsonObject &objectTime = jsonBuffer.parse(body);
     Serial.println(body);
 
