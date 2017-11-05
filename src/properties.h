@@ -74,7 +74,7 @@ Actuator *actuatorArray[5] = {&dayLight, &evenLight, &foog, &misting};
 /*
  * TeraControler 2 defualt values
  * */
-static const int dthPin2 = 4;
+static const int dthPin2 = 19;
 static const int lm35Pin2 = 12;
 static const int wfPin2 = 1;
 

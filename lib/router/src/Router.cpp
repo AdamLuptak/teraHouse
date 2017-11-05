@@ -6,7 +6,7 @@
 #include "Router.h"
 
 
-String Router::route(String httpRequest, TerraController &terraController, UIPClient &client) {
+String Router::route(String httpRequest, TerraController &terraController, EthernetClient &client) {
     httpParser.cleanRequest(httpRequest);
 
     String response = "";

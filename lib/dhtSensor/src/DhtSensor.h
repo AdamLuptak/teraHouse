@@ -10,6 +10,7 @@
 
 class DhtSensor : public Sensor {
 public:
+    DhtSensor();
     DhtSensor(uint8_t pin, uint8_t type, String &endpoint);
 
     virtual float getMeasurement();

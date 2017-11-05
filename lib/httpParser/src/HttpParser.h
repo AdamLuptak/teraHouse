@@ -11,7 +11,8 @@
 
 class HttpParser {
 public:
-    String  parseEndpoint(String httpRequest);
+    String parseEndpoint(String httpRequest);
+
     String parseBody(String httpRequest);
 
     void cleanRequest(String &httpRequest);

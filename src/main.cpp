@@ -3,17 +3,23 @@
 #include <TimeLib.h>
 #include <DhtSensor.h>
 #include <Router.h>
-#include "UIPEthernet.h"
+#include <SD.h>
+#include <SPI.h>
+#include <Ethernet.h>
 #include "Timer.h"
 #include <avr/wdt.h>
 #include <Lm35.h>
 #include <WfSensor.h>
 #include "EEPROM.h"
+#include <MemoryFree.h>
+#include <ActuatorMapper.h>
+
 
 #define PROPERTIES 1
 #if PROPERTIES == 1
 
 #include "properties.h"
+#include "../lib/jsonSdSerializer/src/JsonSDSerializer.h"
 
 #else
 
@@ -30,7 +36,15 @@ struct Date {
     int year;
 };
 
+enum httpRequestType {
+    GET,
+    POST,
+    PUT
+};
+
 Date date = {19, 38, 0, 16, 1, 17};
+
+String request = "";
 
 Router router;
 
@@ -50,6 +64,10 @@ void clearResetCounter();
 
 void resetCount();
 
+ActuatorMapper actuatorMapper;
+
+File myFile;
+
 template<class T>
 int EEPROM_readAnything(int ee, T &value);
 
@@ -58,9 +76,18 @@ void setTerraController(DhtSensor &sensor, Lm35 &lm35, WfSensor &wfSensor, Actua
                         String *timeEndpoint, String *manualEndpoint, String *sensorEndpoint, String *allEndpoint,
                         String *actuatorEndpoint, String *showTimeEndpoint, String *baseEndpoint);
 
-EthernetServer server(80);
-byte mac[] = {0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED};
-IPAddress ip(192, 168, 1, 177);
+// Enter a MAC address and IP address for your controller below.
+// The IP address will be dependent on your local network:
+byte mac[] = {
+        0x90, 0xA2, 0xDA, 0x0D, 0x58, 0x6E};
+IPAddress ip(192, 168, 1, 77);
+IPAddress gateway(192, 168, 1, 1);
+IPAddress mask(255, 255, 255, 0);
+// Initialize the Ethernet server library
+// with the IP address and port you want to use
+// (port 80 is default for HTTP):
+int port = 80;
+EthernetServer server = EthernetServer(port);
 HttpParser httpParser;
 static const char *const HEADER_JSON = "HTTP/1.0 200 OK\r\n"
         "Content-Type: application/json\r\n"
@@ -73,6 +100,11 @@ void setup() {
     resetCount();
     Serial.println("restart device");
 
+
+    const String &jsonString = actuatorMapper.actuatorToJsonString(dayLight);
+    Serial.println(jsonString);
+
+
     setTime(date.hour,
             date.minute,
             date.second,
@@ -83,6 +115,56 @@ void setup() {
     setPins();
 
     timer.every(1000, updateTemperatures);
+    Actuator actuators[10];
+
+    actuators[0] = dayLight;
+    actuators[1] = misting;
+
+
+    if (!SD.begin(4)) {
+        Serial.println("initializatdsdfsdfion failed!");
+        return;
+    }
+    File actuatorFile;
+
+
+    actuatorFile = SD.open("ac.txt");
+    String oneLine;
+    StaticJsonBuffer<1000> jsonBuffer;
+
+    if (actuatorFile) {
+        Serial.println("test.txt:");
+
+        // read from the file until there's nothing else in it:
+        while (actuatorFile.available()) {
+            int i = actuatorFile.read();
+            if (i == '\n') {
+                
+                
+                
+                
+                JsonObject &object = jsonBuffer.parse(oneLine);
+                object.prettyPrintTo(Serial);
+                oneLine = "";
+            } else {
+                oneLine.concat((char) i);
+            }
+        }
+        // close the file:
+        actuatorFile.close();
+    } else {
+        // if the file didn't open, print an error:
+        Serial.println("error opening test.txt");
+    }
+
+
+
+
+//    JsonSDSerializer jsonSDSerializer;
+//
+//    jsonSDSerializer.saveActuatatorToFile(misting);
+//    const Actuator &actuator = jsonSDSerializer.loadActuatorFromFile();
+
 
     setupEthernet();
 
@@ -134,6 +216,24 @@ void setup() {
     Serial.println(string);
 
     //tc2.toString();
+
+
+    // if the file opened okay, write to it:
+//    if (myFile) {
+//        Serial.print("Writing to test.txt...");
+//        myFile.println("testing 1, 2, 3.");
+//        // close the file:
+//        myFile.close();
+//        Serial.println("done.");
+//    } else {
+//        // if the file didn't open, print an error:
+//        Serial.println("error opening test.txt");
+//    }
+
+    // re-open the file for reading:
+
+
+
 
     wdt_enable(WDTO_8S);     // enable the watchdog
 }
@@ -209,7 +309,9 @@ void setupEthernet() {
     Ethernet.begin(mac, ip);
     server.begin();
     Serial.print("server is at ");
-    Serial.println(Ethernet.localIP());
+    Serial.print(Ethernet.localIP());
+    Serial.print(":");
+    Serial.println(port);
 }
 
 void setPins() {
@@ -246,63 +348,96 @@ void updateTemperatures() {
 }
 
 void loop() {
-    delay(1);
+    request = "";
+    httpRequestType requestType;
+    // listen for incoming clients
     EthernetClient client = server.available();
-    String bodyHeader = "";
     if (client) {
         Serial.println("new client");
-        int finalString = 0;
-        long prev = millis();
-        boolean timeout = false;
+        // an http request ends with a blank line
+        boolean currentLineIsBlank = true;
+        int endOfBodyCounter = 0;
+        int contentLenght = 0;
+        int headerCharCounter = 0;
         while (client.connected()) {
-
-            long time = millis();
-            //timeout protection
-            if (time - prev > 5000) {
-                timeout = true;
-                break;
-            }
             if (client.available()) {
-                char actual = (char) client.read();
-                bodyHeader.concat(actual);
-                if (bodyHeader.indexOf("\n{") > 0) {
-                } else {
-                    finalString++;
+                char c = client.read();
+                request.concat(c);
+                if (c == '\n' && currentLineIsBlank) {
+
+                    if (contentLenght == 0) {
+
+                        if (request.indexOf("GET") > -1) {
+                            Serial.println(headerCharCounter);
+                            client.println("HTTP/1.1 200 OK");
+                            client.println("Content-Type: application/json");
+                            client.println(
+                                    "Connection: close");  // the connection will be closed after completion of the response
+                            break;
+                        } else if (request.indexOf("POST") > -1) {
+                            Serial.println("Request type POST");
+                            int startIndexOfContentLenght = request.indexOf("Content-Length: ") + 16;
+                            String stringStartsFromContentLenght = request.substring(startIndexOfContentLenght);
+                            int indexOfEndOfContenLenght = stringStartsFromContentLenght.indexOf("\r\n");
+                            contentLenght = stringStartsFromContentLenght.substring(0,
+                                                                                    indexOfEndOfContenLenght).toInt();
+                            Serial.print("ContentLenght: ");
+                            Serial.println(contentLenght);
+
+                        } else if (request.indexOf("PUT") > -1) {
+                            Serial.println("Request type POST");
+                            int startIndexOfContentLenght = request.indexOf("Content-Length: ") + 16;
+                            String stringStartsFromContentLenght = request.substring(startIndexOfContentLenght);
+                            int indexOfEndOfContenLenght = stringStartsFromContentLenght.indexOf("\r\n");
+                            contentLenght = stringStartsFromContentLenght.substring(0,
+                                                                                    indexOfEndOfContenLenght).toInt();
+                            Serial.print("ContentLenght: ");
+                            Serial.println(contentLenght);
+
+                        }
+
+
+                    }
+
                 }
-                if (bodyHeader.indexOf("HTTP") > 0) {
-                    break;
+                if (contentLenght != 0) {
+                    endOfBodyCounter++;
+                    if (endOfBodyCounter == contentLenght + 1) {
+                        Serial.println(headerCharCounter);
+                        client.println("HTTP/1.1 200 OK");
+                        client.println("Content-Type: application/json");
+                        client.println(
+                                "Connection: close");  // the connection will be closed after completion of the response
+                        break;
+                    }
+                } else {
+                    headerCharCounter++;
+                }
+
+
+                if (c == '\n') {
+                    // you're starting a new line
+                    currentLineIsBlank = true;
+                } else if (c != '\r') {
+                    // you've gotten a character on the current line
+                    currentLineIsBlank = false;
                 }
             }
         }
-
-        String requestEndpoint = httpParser.parseEndpoint(bodyHeader);
-        String response;
-
-        if (requestEndpoint.startsWith(tc1BaseEdpoint)) {
-            bodyHeader.replace(tc1BaseEdpoint, "");
-            response = router.route(bodyHeader, tc1, client);
-            response.replace("TerraController", "TerraController1");
-        } else if (requestEndpoint.startsWith(tc2BaseEdpoint)) {
-            bodyHeader.replace(tc2BaseEdpoint, "");
-            response = router2.route(bodyHeader, tc2, client);
-            response.replace("TerraController", "TerraController2");
-        }
-
-        if (timeout) {
-            response = "{\"error\" : \"timeout\"}";
-        }
-
-        client.print(HEADER_JSON);
-        client.println(response);
-
+        // give the web browser time to receive the data
+        request.remove(0, headerCharCounter + 1);
+        StaticJsonBuffer<1000> jsonBuffer;
+        JsonObject &object = jsonBuffer.parse(request.c_str());
+        object.prettyPrintTo(Serial);
         delay(1);
+
+        // close the connection:
         client.stop();
         Serial.println("client disconnected");
     }
 
     timer.update();
     wdt_reset();
-
 }
 
 

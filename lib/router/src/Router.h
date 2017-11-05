@@ -22,11 +22,11 @@ static const char *const ALL_END = "all/";
 #include "ArduinoJson.h"
 #include "TimeLib.h"
 #include "Time.h"
-#include <UIPClient.h>
+#include <EthernetClient.h>
 
 class Router {
 public:
-    String route(String httpRequest, TerraController &terraController, UIPClient &client);
+    String route(String httpRequest, TerraController &terraController, EthernetClient &client);
 
     void registerRoute(String *route);
 
